@@ -1,0 +1,72 @@
+# ╔══════════════════════════════════════════════════════════╗
+# ║  SWAYLOCK-EFFECTS // CYBERPUNK NEON PROTOCOL v2.0      ║
+# ║  requires: swaylock-effects (AUR: swaylock-effects-git) ║
+# ╚══════════════════════════════════════════════════════════╝
+
+# ── behaviour ──
+ignore-empty-password
+show-failed-attempts
+daemonize
+
+# ── screenshot + effects pipeline ──
+# захватывает экран и пропускает через цепочку эффектов
+screenshots
+effect-blur=20x3
+effect-vignette=0.2:0.5
+effect-scale=1.0
+# можно добавить effect-pixelate=5 для глитч-эстетики
+
+# ── fade animation ──
+fade-in=0.3
+grace=3
+grace-no-mouse
+grace-no-touch
+
+# ── clock ──
+clock
+timestr=%H:%M
+datestr=%a, %d %b
+# шрифт и размер для часов
+font=JetBrainsMono Nerd Font
+font-size=64
+
+# ── indicator ring ──
+indicator
+indicator-radius=120
+indicator-thickness=14
+indicator-caps-lock
+
+# ── IDLE state — dim neon pulse, полупрозрачный ──
+ring-color=1a1a2eaa
+inside-color=0d0d1a88
+line-color=00000000
+separator-color=00000000
+text-color=c0c0d0cc
+
+# ── TYPING — magenta neon blaze ──
+ring-ver-color=ff00ffcc
+inside-ver-color=0d0d1acc
+line-ver-color=ff00ff33
+text-ver-color=ff44ffff
+key-hl-color=00ffffee
+
+# ── CORRECT — cyan flash ──
+ring-clear-color=00ffffcc
+inside-clear-color=0d0d1acc
+line-clear-color=00ffff33
+text-clear-color=00ffffffee
+
+# ── CAPS LOCK — amber warning ──
+ring-caps-lock-color=f5c21199
+inside-caps-lock-color=0d0d1acc
+line-caps-lock-color=f5c21133
+text-caps-lock-color=f5c211ff
+
+# ── WRONG — red glitch ──
+ring-wrong-color=ff003cdd
+inside-wrong-color=ff003c33
+line-wrong-color=ff003c44
+text-wrong-color=ff003cff
+
+# ── backspace ──
+bs-hl-color=ff003cee

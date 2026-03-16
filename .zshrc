@@ -36,3 +36,5 @@ eval "$(starship init zsh)"
 
 # Вывод красивого логотипа при старте
 fastfetch
+alias claude-danger='claude --dangerously-skip-permissions'
+export PATH="$HOME/.cargo/bin:$PATH"

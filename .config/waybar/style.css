@@ -1,0 +1,89 @@
+* {
+    font-family: "JetBrainsMono Nerd Font Mono", "Font Awesome 7 Free";
+    font-size: 14px;
+    font-weight: bold;
+    border-radius: 12px;
+}
+
+window#waybar {
+    background-color: transparent;
+    color: #cdd6f4;
+}
+
+#custom-arch, #workspaces, #clock, #mpris, #pulseaudio, #cpu, #memory, #tray, #language {
+    background-color: #1e1e2e;
+    padding: 0 10px;
+    margin: 0 2px;
+    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.4);
+}
+
+#workspaces {
+    padding: 0 2px;
+    margin-right: 0px;
+}
+
+#custom-arch {
+    color: #89b4fa;
+    font-size: 18px;
+    padding-right: 12px;
+}
+
+#workspaces button {
+    color: #585b70;
+    background: transparent;
+    margin: 0 2px;
+    padding: 0 6px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 900;
+    min-width: 24px;
+    min-height: 24px;
+    transition: all 0.2s ease;
+}
+
+#workspaces button.active {
+    background: #cba6f7;
+    color: #1e1e2e;
+    border-radius: 10px;
+}
+
+#workspaces button:hover {
+    background: rgba(202, 166, 247, 0.2);
+    color: #cba6f7;
+}
+
+#mpris {
+    color: #f5c2e7;
+    margin-left: 10px;
+}
+
+#language {
+    color: #f5c2e7;
+}
+
+#clock {
+    color: #f9e2af;
+}
+
+#cpu {
+    color: #f38ba8;
+}
+
+#memory {
+    color: #fab387;
+}
+
+#pulseaudio {
+    color: #cba6f7;
+}
+
+/* Скрываем лишние воркспейсы после 10-го */
+#workspaces button:nth-child(n+11) {
+    font-size: 0px;
+    min-width: 0px;
+    min-height: 0px;
+    padding: 0px;
+    margin: 0px;
+    border: none;
+    opacity: 0;
+}

@@ -1,0 +1,2 @@
+#!/bin/sh
+foot --app-id foot-nvim --override pad=0x0 -e /usr/bin/nvim "$@"

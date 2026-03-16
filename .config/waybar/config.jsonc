@@ -1,0 +1,87 @@
+{
+    "layer": "top",
+    "position": "top",
+    "height": 34,
+    "spacing": 6,
+    "margin-top": 6,
+    "margin-left": 10,
+    "margin-right": 10,
+    "reload_style_on_change": true,
+    "modules-left": ["custom/arch", "niri/workspaces"],
+    "modules-center": ["clock", "mpris"],
+    "modules-right": ["niri/language", "pulseaudio", "cpu", "memory", "tray"],
+
+    "custom/arch": {
+        "format": "󰣇",
+        "tooltip": false
+    },
+    "niri/language": {
+        "format": "{short}"
+    },
+    "niri/workspaces": {
+        "format": "{icon}",
+        "format-icons": {
+            "1": "一",
+            "2": "二",
+            "3": "三",
+            "4": "四",
+            "5": "五",
+            "6": "六",
+            "7": "七",
+            "8": "八",
+            "9": "九",
+            "10": "十"
+        }
+    },
+    "mpris": {
+        "format": "{player_icon} {title} - {artist}",
+        "format-paused": "{status_icon} <i>{title}</i>",
+        "format-stopped": "",
+        "interval": 1,
+        "dynamic-len": 10,
+        "player-icons": {
+            "default": "<span color='#f5c2e7'>󰎆</span>",
+            "spotify": "<span color='#1DB954'></span>",
+            "firefox": "<span color='#FF7139'>󰈹</span>",
+            "chromium": "<span color='#4285F4'></span>",
+            "telegramdesktop": "<span color='#26A5E4'></span>",
+            "de.haeckerfelix.Shortwave": "<span color='#f9e2af'>󰐹</span>",
+            "mpv": "<span color='#a6e3a1'>▶</span>"
+        },
+        "status-icons": {
+            "paused": "<span color='#585b70'>󰏤</span>",
+            "playing": "<span color='#f5c2e7'>󰐊</span>",
+            "stopped": "<span color='#585b70'>󰓛</span>"
+        },
+        "max-length": 40,
+        "tooltip": false,
+        "on-click": "python3 ~/.config/waybar/player-popup.py",
+        "on-click-right": "playerctl play-pause",
+        "on-scroll-up": "playerctl volume 0.05+",
+        "on-scroll-down": "playerctl volume 0.05-"
+    },
+    "clock": {
+        "format": "<span font_size='large'>󰥔</span> {0:%H:%M}   <span font_size='large'>󰃭</span> {0:%d %b}",
+        "tooltip-format": "<tt><small>{calendar}</small></tt>"
+    },
+    "cpu": {
+        "format": "<span font_size='large'>󰻠</span> {usage}%",
+        "tooltip": false
+    },
+    "memory": {
+        "format": "<span font_size='large'>󰘚</span> {}%",
+        "tooltip": false
+    },
+    "pulseaudio": {
+        "format": "{icon} {volume}%",
+        "format-muted": "<span font_size='large'>󰝟</span> Muted",
+        "format-icons": {
+            "default": ["<span font_size='large'>󰕿</span>", "<span font_size='large'>󰖀</span>", "<span font_size='large'>󰕾</span>"]
+        },
+        "on-click": "pavucontrol"
+    },
+    "tray": {
+        "icon-size": 14,
+        "spacing": 6
+    }
+}
