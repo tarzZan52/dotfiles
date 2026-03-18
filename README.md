@@ -69,10 +69,30 @@ bash install.sh
 ```
 
 The installer will:
-1. Install packages via `pacman` + AUR helper (`paru`/`yay`)
+1. Install packages via `pacman` + AUR helper (auto-installs `paru` if needed)
 2. Download Tokyonight GTK + icon themes
 3. Symlink all configs to their proper locations (existing files backed up as `.bak`)
-4. Verify all dependencies are present
+4. Set default shell to zsh, enable PipeWire audio services
+5. Verify all dependencies, fonts, themes, and services
+
+### 🍎 Arch Linux ARM (VMware Fusion on Apple Silicon)
+
+Separate installer for running this rice in a VMware Fusion VM on Apple Silicon Macs:
+
+```bash
+git clone https://github.com/tarzZan52/dotfiles.git ~/dotfiles
+cd ~/dotfiles
+bash install-arm-vmware.sh
+```
+
+This script handles the quirks of aarch64 VMs:
+1. **Fixes TTY** — removes `kmscon` (blocks DRM node), restores `getty@tty1`, sets `multi-user.target`
+2. **Graphics stack** — installs Mesa, VirGL, Wayland, XWayland for VMware's virtual GPU
+3. **Builds `open-vm-tools` from source** — the official package is x86_64-only, so the script clones the Arch PKGBUILD, patches it for aarch64 (adds arch, fixes GCC `-Wno-discarded-qualifiers`, undefines `g_free` macro), and builds with `makepkg`
+4. **Deploys configs** — copies dotfiles and patches `niri/config.kdl` to remove the fixed `mode` line so VMware can dynamically set the resolution
+5. **No auto-start** — after reboot, log in at TTY1 and run `niri-session` manually
+
+> **Note:** The ARM installer copies configs instead of symlinking them, so edits in `~/.config/` won't reflect back to the repo. This is intentional for a VM setup where you may want to diverge from the main config.
 
 ## ⌨️ Keybinds
 
@@ -149,8 +169,10 @@ dotfiles/
 ├── .zshrc                   # zsh config
 ├── .gitconfig               # git identity
 ├── .gtkrc-2.0               # GTK2 theme
+├── wallpapers/              # bundled wallpapers (copied to ~/Pictures/...)
 ├── assets/                  # screenshots
-├── install.sh               # main installer
+├── install.sh               # main installer (bare metal)
+├── install-arm-vmware.sh    # installer for ARM VM (Apple Silicon + VMware)
 └── install-remote.sh        # one-liner bootstrap
 ```
 
@@ -170,7 +192,7 @@ sudo pacman -S zsh starship zoxide fastfetch neovim superfile thunar
 sudo pacman -S playerctl brightnessctl pipewire wireplumber pavucontrol
 
 # Fonts
-sudo pacman -S ttf-jetbrains-mono-nerd otf-firamono-nerd
+sudo pacman -S ttf-jetbrains-mono-nerd otf-firamono-nerd otf-font-awesome noto-fonts-cjk
 
 # Theming
 sudo pacman -S nwg-look kvantum qt5ct qt6ct xsettingsd

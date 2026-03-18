@@ -12,9 +12,9 @@ if [ -z "$WALLPAPER" ]; then
     exit 1
 fi
 
-pkill swaybg
-sleep 0.1
+pkill swaybg 2>/dev/null || true
+sleep 0.2
 swaybg -m fill -i "$WALLPAPER" &
 disown
 
-notify-send "Wallpaper" "$(basename "$WALLPAPER")" -i "$WALLPAPER" -t 2000
+notify-send "Wallpaper" "$(basename "$WALLPAPER")" -i "$WALLPAPER" -t 2000 2>/dev/null || true

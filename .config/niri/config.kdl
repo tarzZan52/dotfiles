@@ -1,6 +1,6 @@
 spawn-at-startup "waybar"
 spawn-at-startup "python3" "/home/user/.config/waybar/art-cacher.py"
-spawn-at-startup "swaybg" "-m" "fill" "-i" "/home/user/Pictures/Wallpaper-Bank/wallpapers/City-Rain.png"
+spawn-at-startup "bash" "/home/user/.config/niri/random-wallpaper.sh"
 
 input {
     keyboard {
