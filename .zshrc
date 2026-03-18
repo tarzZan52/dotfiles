@@ -21,20 +21,24 @@ bindkey '^[[A' history-substring-search-up
 bindkey '^[[B' history-substring-search-down
 
 # Подключение плагинов (пути для Arch Linux)
-source /usr/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh
-source /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+[[ -f /usr/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh ]] && \
+    source /usr/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh
+[[ -f /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh ]] && \
+    source /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 
 export PATH="$HOME/.local/bin:$PATH"
 export VIRTUAL_ENV_DISABLE_PROMPT=1
 
 export _ZO_DOCTOR=0
-eval "$(zoxide init zsh)"
-alias cd='z'
+if command -v zoxide &>/dev/null; then
+    eval "$(zoxide init zsh)"
+    alias cd='z'
+fi
 
 # Инициализация красивого промпта (должен быть последним)
-eval "$(starship init zsh)"
+command -v starship &>/dev/null && eval "$(starship init zsh)"
 
 # Вывод красивого логотипа при старте
-fastfetch
+command -v fastfetch &>/dev/null && fastfetch
 alias claude-danger='claude --dangerously-skip-permissions'
 export PATH="$HOME/.cargo/bin:$PATH"

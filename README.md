@@ -94,6 +94,16 @@ This script handles the quirks of aarch64 VMs:
 
 > **Note:** The ARM installer copies configs instead of symlinking them, so edits in `~/.config/` won't reflect back to the repo. This is intentional for a VM setup where you may want to diverge from the main config.
 
+### Updating
+
+Pull latest changes and re-sync all symlinks:
+
+```bash
+bash ~/dotfiles/update.sh
+```
+
+The updater will `git pull`, re-link any configs that drifted (backing up changed files), and copy new wallpapers.
+
 ## ⌨️ Keybinds
 
 <details>
@@ -173,7 +183,8 @@ dotfiles/
 ├── assets/                  # screenshots
 ├── install.sh               # main installer (bare metal)
 ├── install-arm-vmware.sh    # installer for ARM VM (Apple Silicon + VMware)
-└── install-remote.sh        # one-liner bootstrap
+├── install-remote.sh        # one-liner bootstrap
+└── update.sh                # pull latest + re-sync symlinks
 ```
 
 ## 📦 Dependencies
