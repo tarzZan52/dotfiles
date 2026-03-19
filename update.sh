@@ -159,7 +159,46 @@ if [ -d "$DOTFILES_DIR/wallpapers" ]; then
     [ "$NEW_WP" -eq 0 ] && ok "wallpapers up to date" || ok "$NEW_WP new wallpaper(s) added"
 fi
 
+# ── Step 4: Rebuild caches ──
+if [ "$UPDATED" -gt 0 ]; then
+    info "Rebuilding caches..."
+    fc-cache -f 2>/dev/null && ok "Font cache rebuilt" || true
+    if command -v gtk-update-icon-cache &>/dev/null && [ -d "$HOME/.local/share/icons/Tokyonight-Light" ]; then
+        gtk-update-icon-cache -f "$HOME/.local/share/icons/Tokyonight-Light" 2>/dev/null && ok "Icon cache rebuilt" || true
+    fi
+fi
+
+# ── Step 5: Reload running services ──
+if [ "$UPDATED" -gt 0 ]; then
+    info "Reloading services..."
+    RELOADED=()
+
+    # Niri auto-reloads on config change — no action needed
+
+    if pgrep -x waybar &>/dev/null; then
+        pkill -SIGUSR2 waybar 2>/dev/null && RELOADED+=("waybar")
+    fi
+
+    if command -v makoctl &>/dev/null && pgrep -x mako &>/dev/null; then
+        makoctl reload 2>/dev/null && RELOADED+=("mako")
+    fi
+
+    if pgrep -x xsettingsd &>/dev/null; then
+        pkill -HUP xsettingsd 2>/dev/null && RELOADED+=("xsettingsd")
+    fi
+
+    if [ ${#RELOADED[@]} -gt 0 ]; then
+        ok "Reloaded: ${RELOADED[*]}"
+    else
+        ok "No running services to reload"
+    fi
+fi
+
 # ── Summary ──
 echo ""
-echo -e "${GREEN}Update complete:${NC} ${BOLD}$UPDATED${NC} linked, ${BOLD}$SKIPPED${NC} already current"
+if [ "$UPDATED" -gt 0 ]; then
+    echo -e "${GREEN}Update complete:${NC} ${BOLD}$UPDATED${NC} linked, ${BOLD}$SKIPPED${NC} already current"
+else
+    echo -e "${GREEN}Everything up to date.${NC} (${BOLD}$SKIPPED${NC} symlinks checked)"
+fi
 echo ""
