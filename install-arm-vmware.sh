@@ -92,7 +92,7 @@ DESKTOP_PKGS=(
     pipewire pipewire-pulse pipewire-alsa wireplumber
 
     # system tools
-    fastfetch btop
+    fastfetch btop starship
 
     # wayland utils
     wl-clipboard grim slurp libnotify xdg-utils
@@ -413,7 +413,7 @@ BINS=(
     niri waybar foot fuzzel swaybg mako
     playerctl brightnessctl wpctl
     grim slurp wl-copy notify-send
-    fastfetch btop nvim python3 paru kvantummanager
+    fastfetch btop nvim python3 paru kvantummanager starship
 )
 for cmd in "${BINS[@]}"; do
     if command -v "$cmd" &>/dev/null; then
