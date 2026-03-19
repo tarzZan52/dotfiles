@@ -44,7 +44,7 @@ fi
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 # Step 1: Fix TTY & remove kmscon
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-step "Step 1/7 — Preparing system & fixing TTY"
+step "Step 1/9 — Preparing system & fixing TTY"
 
 # kmscon grabs the DRM node and blocks Niri/Wayland from accessing GPU
 if pacman -Qi kmscon &>/dev/null; then
@@ -63,7 +63,7 @@ sudo systemctl set-default multi-user.target && ok "Default target: multi-user" 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 # Step 2: Graphics stack (VirGL / VMware)
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-step "Step 2/7 — Installing graphics stack (Mesa + VirGL)"
+step "Step 2/9 — Installing graphics stack (Mesa + VirGL)"
 
 GFX_PKGS=(mesa vulkan-virtio wayland xorg-xwayland xwayland-satellite)
 
@@ -76,7 +76,7 @@ fi
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 # Step 3: Niri + core desktop utilities
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-step "Step 3/7 — Installing Niri & desktop utilities"
+step "Step 3/9 — Installing Niri & desktop utilities"
 
 DESKTOP_PKGS=(
     # compositor & bar
@@ -88,8 +88,8 @@ DESKTOP_PKGS=(
     # background & notifications
     swaybg mako
 
-    # audio
-    pipewire wireplumber
+    # audio (pulse/alsa compat needed for apps to see audio)
+    pipewire pipewire-pulse pipewire-alsa wireplumber
 
     # system tools
     fastfetch btop
@@ -99,6 +99,9 @@ DESKTOP_PKGS=(
 
     # control
     playerctl brightnessctl
+
+    # theming (GTK/Qt)
+    kvantum kvantum-qt5 qt5ct qt6ct nwg-look xsettingsd
 )
 
 info "Installing: ${DESKTOP_PKGS[*]}"
@@ -110,7 +113,7 @@ fi
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 # Step 4: Fonts
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-step "Step 4/7 — Installing fonts"
+step "Step 4/9 — Installing fonts"
 
 FONT_PKGS=(
     ttf-font-awesome
@@ -131,14 +134,41 @@ info "Rebuilding font cache..."
 fc-cache -fv &>/dev/null && ok "Font cache rebuilt" || warn "fc-cache failed"
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-# Step 5: Build open-vm-tools for aarch64
+# Step 5: AUR helper (paru)
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-step "Step 5/7 — Building open-vm-tools for aarch64"
+step "Step 5/9 — Installing AUR helper (paru)"
+
+if command -v paru &>/dev/null; then
+    ok "paru already installed"
+else
+    info "Installing rust (required to build paru)..."
+    sudo pacman -S --needed --noconfirm rust || { err "Failed to install rust"; ERRORS+=("AUR helper: rust install failed"); }
+
+    PARU_BUILD="$(mktemp -d /tmp/paru_build.XXXXXX)"
+    info "Cloning paru from AUR..."
+    if git clone --depth=1 https://aur.archlinux.org/paru.git "$PARU_BUILD"; then
+        if (cd "$PARU_BUILD" && makepkg -si --noconfirm); then
+            ok "paru installed"
+        else
+            err "paru build failed"
+            ERRORS+=("AUR helper: paru build failed")
+        fi
+    else
+        err "Failed to clone paru"
+        ERRORS+=("AUR helper: git clone failed")
+    fi
+    rm -rf "$PARU_BUILD"
+fi
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# Step 6: Build open-vm-tools for aarch64
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+step "Step 6/9 — Building open-vm-tools for aarch64"
 info "This is the most critical step — building from Arch PKGBUILD with ARM patches"
 
 # Build dependencies
 info "Installing build dependencies..."
-sudo pacman -S --needed --noconfirm base-devel git \
+sudo pacman -S --needed --noconfirm base-devel git python3 \
     fuse3 gtkmm3 libcanberra libdnet libmspack libsigc++ \
     libxss open-iscsi procps-ng uriparser xmlsec rpcsvc-proto \
     2>/dev/null || warn "Some build deps may be missing"
@@ -165,12 +195,13 @@ info "Build directory: $BUILD_DIR"
     ok "Added aarch64 to arch=()"
 
     # Add -Wno-discarded-qualifiers to CFLAGS inside build()
+    # The PKGBUILD has no export CFLAGS line — we insert one right after build() {
     # This suppresses a const-qualifier error that breaks the build on newer GCC
-    sed -i '/^build()/,/^}$/ s/export CFLAGS="/export CFLAGS="-Wno-discarded-qualifiers /' PKGBUILD
+    sed -i '/^build[[:space:]]*()[[:space:]]*{/a\  export CFLAGS="$CFLAGS -Wno-discarded-qualifiers"' PKGBUILD
     ok "Added -Wno-discarded-qualifiers to CFLAGS"
 
-    info "Downloading and extracting sources (makepkg --nobuild)..."
-    if ! makepkg --nobuild --noconfirm 2>&1; then
+    info "Downloading and extracting sources (makepkg --nobuild -s)..."
+    if ! makepkg --nobuild -s --noconfirm 2>&1; then
         err "makepkg --nobuild failed"
         ERRORS+=("open-vm-tools: makepkg --nobuild failed")
         exit 1
@@ -205,9 +236,9 @@ info "Build directory: $BUILD_DIR"
     fi
 ) || true
 
-# Enable vmtoolsd regardless (may already be installed from a prior run)
-info "Enabling vmtoolsd service..."
-sudo systemctl enable vmtoolsd.service 2>/dev/null && ok "vmtoolsd.service enabled" || warn "Could not enable vmtoolsd.service"
+# Enable and start vmtoolsd (may already be installed from a prior run)
+info "Enabling and starting vmtoolsd service..."
+sudo systemctl enable --now vmtoolsd.service 2>/dev/null && ok "vmtoolsd.service enabled & started" || warn "Could not enable vmtoolsd.service"
 
 # Cleanup
 rm -rf "$BUILD_DIR"
@@ -216,7 +247,7 @@ ok "Cleaned up build directory"
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 # Step 6: Deploy dotfiles
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-step "Step 6/7 — Deploying dotfiles"
+step "Step 7/9 — Deploying dotfiles"
 
 mkdir -p "$HOME/.config"
 
@@ -301,9 +332,80 @@ if [ -f "$NIRI_CFG" ]; then
 fi
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-# Step 7: Verify installation
+# Step 8: Themes (GTK + Qt + Icons)
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-step "Step 7/7 — Verifying installation"
+step "Step 8/9 — Installing themes & icons"
+
+THEME_DIR="$HOME/.local/share/themes"
+ICON_DIR="$HOME/.local/share/icons"
+mkdir -p "$THEME_DIR" "$ICON_DIR"
+
+# GTK theme (download from GitHub releases)
+info "Installing Tokyonight GTK theme..."
+if [ ! -d "$THEME_DIR/Tokyonight-Dark-B-LB" ]; then
+    TMP_THEME="$(mktemp)"
+    if curl -fSL "https://github.com/Fausto-Korpsvart/Tokyo-Night-GTK-Theme/releases/latest/download/Tokyonight-Dark-B-LB.tar.xz" -o "$TMP_THEME"; then
+        tar -xf "$TMP_THEME" -C "$THEME_DIR" || { err "Failed to extract GTK theme"; ERRORS+=("GTK theme extraction failed"); }
+        rm -f "$TMP_THEME"
+        # GTK config references "Tokyonight-Dark" — symlink from extracted dir name
+        if [ -d "$THEME_DIR/Tokyonight-Dark-B-LB" ] && [ ! -e "$THEME_DIR/Tokyonight-Dark" ]; then
+            ln -s "Tokyonight-Dark-B-LB" "$THEME_DIR/Tokyonight-Dark"
+        fi
+        ok "GTK theme installed"
+    else
+        err "Failed to download GTK theme"
+        ERRORS+=("GTK theme download failed")
+    fi
+else
+    ok "GTK theme already installed"
+fi
+
+# Icon theme
+info "Installing Tokyonight icon theme..."
+if [ ! -d "$ICON_DIR/Tokyonight-Light" ]; then
+    TMP_ICONS="$(mktemp)"
+    if curl -fSL "https://github.com/Fausto-Korpsvart/Tokyo-Night-GTK-Theme/releases/latest/download/Tokyonight-Light-Icons.tar.xz" -o "$TMP_ICONS"; then
+        tar -xf "$TMP_ICONS" -C "$ICON_DIR" && ok "Icon theme installed" || { err "Failed to extract icon theme"; ERRORS+=("Icon theme extraction failed"); }
+        rm -f "$TMP_ICONS"
+    else
+        err "Failed to download icon theme"
+        ERRORS+=("Icon theme download failed")
+    fi
+else
+    ok "Icon theme already installed"
+fi
+
+# Update icon cache
+if command -v gtk-update-icon-cache &>/dev/null && [ -d "$ICON_DIR/Tokyonight-Light" ]; then
+    gtk-update-icon-cache -f "$ICON_DIR/Tokyonight-Light" 2>/dev/null && ok "Icon cache updated" || true
+fi
+
+# Kvantum Qt theme
+info "Setting Kvantum theme..."
+if command -v kvantummanager &>/dev/null; then
+    kvantummanager --set KvArcDark 2>/dev/null && ok "Kvantum theme set to KvArcDark" || warn "Could not set Kvantum theme"
+else
+    warn "kvantummanager not found — Kvantum theme not applied"
+fi
+
+# Inject environment block into niri config for Qt theming
+NIRI_CFG="$HOME/.config/niri/config.kdl"
+if [ -f "$NIRI_CFG" ] && ! grep -q 'QT_QPA_PLATFORMTHEME' "$NIRI_CFG"; then
+    info "Adding Qt/GTK environment variables to niri config..."
+    cat >> "$NIRI_CFG" <<'ENVBLOCK'
+
+environment {
+    QT_QPA_PLATFORMTHEME "qt5ct"
+    QT_WAYLAND_DISABLE_WINDOWDECORATION "1"
+}
+ENVBLOCK
+    ok "Environment block added to niri config"
+fi
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# Step 9: Verify installation
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+step "Step 9/9 — Verifying installation"
 
 echo ""
 info "Checking binaries..."
@@ -311,7 +413,7 @@ BINS=(
     niri waybar foot fuzzel swaybg mako
     playerctl brightnessctl wpctl
     grim slurp wl-copy notify-send
-    fastfetch btop nvim python3
+    fastfetch btop nvim python3 paru kvantummanager
 )
 for cmd in "${BINS[@]}"; do
     if command -v "$cmd" &>/dev/null; then
@@ -325,14 +427,30 @@ done
 echo ""
 info "Checking fonts..."
 if command -v fc-list &>/dev/null; then
+    FONT_FAMILIES="$(fc-list : family 2>/dev/null)"
     for font in "JetBrainsMono Nerd Font" "Font Awesome" "Noto Color Emoji" "Noto Sans CJK"; do
-        if fc-list 2>/dev/null | grep -qi "$font"; then
+        if echo "$FONT_FAMILIES" | grep -qi "$font"; then
             ok "$font"
         else
             err "$font not found"
             ERRORS+=("Font not found: $font")
         fi
     done
+fi
+
+echo ""
+info "Checking themes..."
+if [ -d "$HOME/.local/share/themes/Tokyonight-Dark-B-LB" ]; then
+    ok "Tokyonight GTK theme"
+else
+    err "Tokyonight GTK theme not found"
+    ERRORS+=("Tokyonight GTK theme missing")
+fi
+if [ -d "$HOME/.local/share/icons/Tokyonight-Light" ]; then
+    ok "Tokyonight icon theme"
+else
+    err "Tokyonight icon theme not found"
+    ERRORS+=("Tokyonight icon theme missing")
 fi
 
 echo ""
