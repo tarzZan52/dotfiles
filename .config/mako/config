@@ -1,9 +1,86 @@
-font=JetBrains Mono 11
-background-color=#1e1e2e
+# ══════════════════════════════════════════
+#  mako — Catppuccin Mocha
+# ══════════════════════════════════════════
+
+# ─── Общие ────────────────────────────────
+font=JetBrainsMono Nerd Font 11
+sort=-time
+layer=overlay
+anchor=top-right
+width=380
+height=120
+margin=12
+padding=14,18
+border-size=2
+border-radius=14
+icons=1
+icon-path=/usr/share/icons/Papirus-Dark
+max-icon-size=48
+default-timeout=5000
+max-visible=4
+outer-margin=6
+
+# ─── Цвета (Catppuccin Mocha) ────────────
+background-color=#1e1e2eee
 text-color=#cdd6f4
 border-color=#cba6f7
-border-size=2
-border-radius=8
-padding=12
-margin=8
-default-timeout=5000
+progress-color=over #313244
+
+# ─── Группировка ──────────────────────────
+group-by=app-name
+
+# ─── Действия ─────────────────────────────
+on-button-left=invoke-default-action
+on-button-middle=none
+on-button-right=dismiss
+on-touch=dismiss
+on-notify=exec mpv /usr/share/sounds/freedesktop/stereo/message.oga --no-video --really-quiet 2>/dev/null &
+
+# ─── Формат ───────────────────────────────
+markup=1
+format=<b>%s</b>\n%b
+
+# ═══════════ Критерии ═════════════════════
+
+# ─── Низкий приоритет ─────────────────────
+[urgency=low]
+border-color=#585b70
+background-color=#1e1e2ecc
+default-timeout=3000
+
+# ─── Критический ─────────────────────────
+[urgency=critical]
+border-color=#f38ba8
+background-color=#1e1e2e
+text-color=#f38ba8
+default-timeout=0
+ignore-timeout=1
+
+# ─── Группа (сводка) ─────────────────────
+[grouped]
+format=<b>%s</b>\n(%g ещё)
+border-color=#89b4fa
+
+# ─── Telegram ─────────────────────────────
+[app-name="Telegram Desktop"]
+border-color=#89b4fa
+default-timeout=8000
+
+# ─── Firefox ──────────────────────────────
+[app-name="Firefox"]
+border-color=#f9e2af
+
+# ─── Spotify ──────────────────────────────
+[app-name="Spotify"]
+border-color=#a6e3a1
+default-timeout=4000
+
+# ─── Скриншоты ────────────────────────────
+[app-name="Screenshot"]
+border-color=#f5c2e7
+default-timeout=3000
+
+# ─── Громкость / аудио ───────────────────
+[category="device"]
+border-color=#cba6f7
+default-timeout=2000
