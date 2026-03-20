@@ -84,3 +84,14 @@ default-timeout=3000
 [category="device"]
 border-color=#cba6f7
 default-timeout=2000
+
+# ─── Не беспокоить ───────────────────────
+# Скрываем ВСЕ уведомления в режиме DnD
+[mode=do-not-disturb]
+invisible=1
+
+# Кроме собственного уведомления о переключении DnD
+[mode=do-not-disturb app-name="DnD"]
+invisible=0
+border-color=#f9e2af
+default-timeout=2000

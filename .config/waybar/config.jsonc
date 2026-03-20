@@ -9,7 +9,7 @@
     "reload_style_on_change": true,
     "modules-left": ["custom/arch", "niri/workspaces"],
     "modules-center": ["clock", "mpris"],
-    "modules-right": ["niri/language", "pulseaudio", "cpu", "memory", "tray"],
+    "modules-right": ["custom/dnd", "niri/language", "pulseaudio", "cpu", "memory", "tray"],
 
     "custom/arch": {
         "format": "󰣇",
@@ -79,6 +79,13 @@
             "default": ["<span font_size='large'>󰕿</span>", "<span font_size='large'>󰖀</span>", "<span font_size='large'>󰕾</span>"]
         },
         "on-click": "pavucontrol"
+    },
+    "custom/dnd": {
+        "exec": "if makoctl mode | grep -q do-not-disturb; then echo '{\"text\": \"󰂛\", \"class\": \"on\", \"tooltip\": \"Не беспокоить: ВКЛ\"}'; else echo '{\"text\": \"󰂚\", \"class\": \"off\", \"tooltip\": \"Не беспокоить: ВЫКЛ\"}'; fi",
+        "return-type": "json",
+        "interval": 1,
+        "signal": 9,
+        "on-click": "bash /home/user/.config/mako/dnd-toggle.sh"
     },
     "tray": {
         "icon-size": 14,

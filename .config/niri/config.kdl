@@ -263,7 +263,7 @@ binds {
     // Уведомления
     Mod+N { spawn-sh "makoctl dismiss"; }
     Mod+Shift+N { spawn-sh "makoctl dismiss --all"; }
-    Mod+Ctrl+N { spawn-sh "makoctl mode -t do-not-disturb"; }
+    Mod+Ctrl+N { spawn "bash" "/home/user/.config/mako/dnd-toggle.sh"; }
 
     Mod+Shift+S { screenshot; }
     Ctrl+Print { screenshot-screen; }
