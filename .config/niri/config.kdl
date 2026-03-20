@@ -260,8 +260,8 @@ binds {
     Mod+W { spawn "bash" "/home/user/.config/niri/random-wallpaper.sh"; }
 
 
-    // Уведомления
-    Mod+N { spawn-sh "makoctl dismiss"; }
+    // Notifications
+    Mod+N { spawn "python3" "/home/user/.config/mako/notif-center.py"; }
     Mod+Shift+N { spawn-sh "makoctl dismiss --all"; }
     Mod+Ctrl+N { spawn "bash" "/home/user/.config/mako/dnd-toggle.sh"; }
 

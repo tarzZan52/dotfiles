@@ -2,7 +2,7 @@
 #  mako — Catppuccin Mocha
 # ══════════════════════════════════════════
 
-# ─── Общие ────────────────────────────────
+# ─── General ─────────────────────────────
 font=JetBrainsMono Nerd Font 11
 sort=-time
 layer=overlay
@@ -17,38 +17,38 @@ icons=1
 icon-path=/usr/share/icons/Papirus-Dark
 max-icon-size=48
 default-timeout=5000
-max-visible=4
+max-visible=3
+max-history=50
 outer-margin=6
 
-# ─── Цвета (Catppuccin Mocha) ────────────
+# ─── Colors (Catppuccin Mocha) ───────────
 background-color=#1e1e2eee
 text-color=#cdd6f4
 border-color=#cba6f7
 progress-color=over #313244
 
-# ─── Группировка ──────────────────────────
+# ─── Grouping ────────────────────────────
 group-by=app-name
 
-# ─── Действия ─────────────────────────────
+# ─── Actions ─────────────────────────────
 on-button-left=invoke-default-action
 on-button-middle=none
 on-button-right=dismiss
 on-touch=dismiss
-on-notify=exec mpv /usr/share/sounds/freedesktop/stereo/message.oga --no-video --really-quiet 2>/dev/null &
 
-# ─── Формат ───────────────────────────────
+# ─── Format ──────────────────────────────
 markup=1
 format=<b>%s</b>\n%b
 
-# ═══════════ Критерии ═════════════════════
+# ═══════════ Criteria ═════════════════════
 
-# ─── Низкий приоритет ─────────────────────
+# ─── Low urgency ─────────────────────────
 [urgency=low]
 border-color=#585b70
 background-color=#1e1e2ecc
 default-timeout=3000
 
-# ─── Критический ─────────────────────────
+# ─── Critical ────────────────────────────
 [urgency=critical]
 border-color=#f38ba8
 background-color=#1e1e2e
@@ -56,41 +56,39 @@ text-color=#f38ba8
 default-timeout=0
 ignore-timeout=1
 
-# ─── Группа (сводка) ─────────────────────
+# ─── Grouped (summary) ──────────────────
 [grouped]
-format=<b>%s</b>\n(%g ещё)
+format=<b>%s</b>\n(%g more)
 border-color=#89b4fa
 
-# ─── Telegram ─────────────────────────────
+# ─── Telegram ────────────────────────────
 [app-name="Telegram Desktop"]
 border-color=#89b4fa
 default-timeout=8000
 
-# ─── Firefox ──────────────────────────────
+# ─── Firefox ─────────────────────────────
 [app-name="Firefox"]
 border-color=#f9e2af
 
-# ─── Spotify ──────────────────────────────
+# ─── Spotify ─────────────────────────────
 [app-name="Spotify"]
 border-color=#a6e3a1
 default-timeout=4000
 
-# ─── Скриншоты ────────────────────────────
+# ─── Screenshots ─────────────────────────
 [app-name="Screenshot"]
 border-color=#f5c2e7
 default-timeout=3000
 
-# ─── Громкость / аудио ───────────────────
+# ─── Volume / audio ─────────────────────
 [category="device"]
 border-color=#cba6f7
 default-timeout=2000
 
-# ─── Не беспокоить ───────────────────────
-# Скрываем ВСЕ уведомления в режиме DnD
+# ─── Do Not Disturb ─────────────────────
 [mode=do-not-disturb]
 invisible=1
 
-# Кроме собственного уведомления о переключении DnD
 [mode=do-not-disturb app-name="DnD"]
 invisible=0
 border-color=#f9e2af

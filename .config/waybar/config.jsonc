@@ -81,11 +81,13 @@
         "on-click": "pavucontrol"
     },
     "custom/dnd": {
-        "exec": "if makoctl mode | grep -q do-not-disturb; then echo '{\"text\": \"󰂛\", \"class\": \"on\", \"tooltip\": \"Не беспокоить: ВКЛ\"}'; else echo '{\"text\": \"󰂚\", \"class\": \"off\", \"tooltip\": \"Не беспокоить: ВЫКЛ\"}'; fi",
+        "exec": "if makoctl mode | grep -q do-not-disturb; then echo '{\"text\": \"󰂛\", \"class\": \"on\"}'; else echo '{\"text\": \"󰂚\", \"class\": \"off\"}'; fi",
         "return-type": "json",
         "interval": 1,
         "signal": 9,
-        "on-click": "bash /home/user/.config/mako/dnd-toggle.sh"
+        "tooltip": false,
+        "on-click": "python3 /home/user/.config/mako/notif-center.py",
+        "on-click-right": "bash /home/user/.config/mako/dnd-toggle.sh"
     },
     "tray": {
         "icon-size": 14,
