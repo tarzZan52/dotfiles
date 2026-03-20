@@ -79,17 +79,29 @@ fi
 step "Step 3/9 — Installing Niri & desktop utilities"
 
 DESKTOP_PKGS=(
+    # core utils
+    curl rsync unzip
+
+    # shell
+    zsh zoxide zsh-autosuggestions zsh-syntax-highlighting
+
     # compositor & bar
     niri waybar
 
-    # terminal & launchers
-    foot fuzzel
+    # terminals & launchers
+    foot kitty fuzzel tofi
 
-    # background & notifications
-    swaybg mako
+    # background, lock & notifications
+    swaybg swaylock mako
 
     # audio (pulse/alsa compat needed for apps to see audio)
-    pipewire pipewire-pulse pipewire-alsa wireplumber
+    pipewire pipewire-pulse pipewire-alsa wireplumber pavucontrol
+
+    # editor
+    neovim
+
+    # file managers
+    thunar superfile
 
     # system tools
     fastfetch btop starship
@@ -100,8 +112,14 @@ DESKTOP_PKGS=(
     # control
     playerctl brightnessctl
 
+    # python (for waybar scripts)
+    python python-gobject gtk-layer-shell
+
     # theming (GTK/Qt)
-    kvantum kvantum-qt5 qt5ct qt6ct nwg-look xsettingsd
+    kvantum kvantum-qt5 qt5ct qt6ct nwg-look xsettingsd gnome-themes-extra
+
+    # fun
+    trmt
 )
 
 info "Installing: ${DESKTOP_PKGS[*]}"
@@ -117,8 +135,10 @@ step "Step 4/9 — Installing fonts"
 
 FONT_PKGS=(
     ttf-font-awesome
+    otf-font-awesome
     ttf-nerd-fonts-symbols-common
     ttf-jetbrains-mono-nerd
+    otf-firamono-nerd
     noto-fonts-emoji
     noto-fonts-cjk
 )
@@ -158,6 +178,19 @@ else
         ERRORS+=("AUR helper: git clone failed")
     fi
     rm -rf "$PARU_BUILD"
+fi
+
+# Install AUR packages
+AUR_PKGS=(swaylock-effects-git spotify-player)
+if command -v paru &>/dev/null; then
+    info "Installing AUR packages: ${AUR_PKGS[*]}"
+    if ! paru -S --needed --noconfirm "${AUR_PKGS[@]}"; then
+        warn "Some AUR packages failed — check output above"
+        ERRORS+=("Some AUR packages failed to install")
+    fi
+else
+    warn "paru not available — skipping AUR packages: ${AUR_PKGS[*]}"
+    ERRORS+=("AUR packages not installed: ${AUR_PKGS[*]}")
 fi
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -336,41 +369,44 @@ fi
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 step "Step 8/9 — Installing themes & icons"
 
-THEME_DIR="$HOME/.local/share/themes"
 ICON_DIR="$HOME/.local/share/icons"
-mkdir -p "$THEME_DIR" "$ICON_DIR"
+mkdir -p "$ICON_DIR"
 
-# GTK theme (download from GitHub releases)
+# GTK theme via AUR (builds from source with sassc)
 info "Installing Tokyonight GTK theme..."
-if [ ! -d "$THEME_DIR/Tokyonight-Dark-B-LB" ]; then
-    TMP_THEME="$(mktemp)"
-    if curl -fSL "https://github.com/Fausto-Korpsvart/Tokyo-Night-GTK-Theme/releases/latest/download/Tokyonight-Dark-B-LB.tar.xz" -o "$TMP_THEME"; then
-        tar -xf "$TMP_THEME" -C "$THEME_DIR" || { err "Failed to extract GTK theme"; ERRORS+=("GTK theme extraction failed"); }
-        rm -f "$TMP_THEME"
-        # GTK config references "Tokyonight-Dark" — symlink from extracted dir name
-        if [ -d "$THEME_DIR/Tokyonight-Dark-B-LB" ] && [ ! -e "$THEME_DIR/Tokyonight-Dark" ]; then
-            ln -s "Tokyonight-Dark-B-LB" "$THEME_DIR/Tokyonight-Dark"
-        fi
+if pacman -Qi tokyonight-gtk-theme-git &>/dev/null; then
+    ok "GTK theme already installed (AUR)"
+elif command -v paru &>/dev/null; then
+    if paru -S --needed --noconfirm tokyonight-gtk-theme-git; then
         ok "GTK theme installed"
     else
-        err "Failed to download GTK theme"
-        ERRORS+=("GTK theme download failed")
+        err "Failed to install GTK theme from AUR"
+        ERRORS+=("GTK theme install failed")
     fi
 else
-    ok "GTK theme already installed"
+    err "paru not available — cannot install GTK theme"
+    ERRORS+=("GTK theme: no AUR helper")
 fi
 
-# Icon theme
+# Icon theme (clone from repo — not included in AUR package)
 info "Installing Tokyonight icon theme..."
 if [ ! -d "$ICON_DIR/Tokyonight-Light" ]; then
-    TMP_ICONS="$(mktemp)"
-    if curl -fSL "https://github.com/Fausto-Korpsvart/Tokyo-Night-GTK-Theme/releases/latest/download/Tokyonight-Light-Icons.tar.xz" -o "$TMP_ICONS"; then
-        tar -xf "$TMP_ICONS" -C "$ICON_DIR" && ok "Icon theme installed" || { err "Failed to extract icon theme"; ERRORS+=("Icon theme extraction failed"); }
-        rm -f "$TMP_ICONS"
+    ICON_BUILD="$(mktemp -d /tmp/tokyonight_icons.XXXXXX)"
+    if git clone --depth=1 --filter=blob:none --sparse \
+        https://github.com/Fausto-Korpsvart/Tokyonight-GTK-Theme.git "$ICON_BUILD" 2>/dev/null; then
+        (cd "$ICON_BUILD" && git sparse-checkout set icons/Tokyonight-Light) 2>/dev/null
+        if [ -d "$ICON_BUILD/icons/Tokyonight-Light" ]; then
+            cp -r "$ICON_BUILD/icons/Tokyonight-Light" "$ICON_DIR/Tokyonight-Light"
+            ok "Icon theme installed"
+        else
+            err "Icon theme directory not found in repo"
+            ERRORS+=("Icon theme: directory not found")
+        fi
     else
-        err "Failed to download icon theme"
-        ERRORS+=("Icon theme download failed")
+        err "Failed to clone icon theme repo"
+        ERRORS+=("Icon theme: git clone failed")
     fi
+    rm -rf "$ICON_BUILD"
 else
     ok "Icon theme already installed"
 fi
@@ -440,7 +476,7 @@ fi
 
 echo ""
 info "Checking themes..."
-if [ -d "$HOME/.local/share/themes/Tokyonight-Dark-B-LB" ]; then
+if pacman -Qi tokyonight-gtk-theme-git &>/dev/null; then
     ok "Tokyonight GTK theme"
 else
     err "Tokyonight GTK theme not found"

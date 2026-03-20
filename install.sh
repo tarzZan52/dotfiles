@@ -150,32 +150,48 @@ THEME_DIR="$HOME/.local/share/themes"
 ICON_DIR="$HOME/.local/share/icons"
 mkdir -p "$THEME_DIR" "$ICON_DIR"
 
-# GTK theme
+# GTK theme via AUR (builds from source with sassc)
 info "Installing Tokyonight GTK theme..."
-if [ ! -d "$THEME_DIR/Tokyonight-Dark-B-LB" ]; then
-    TMP_THEME="$(mktemp)"
-    if curl -fSL "https://github.com/Fausto-Korpsvart/Tokyo-Night-GTK-Theme/releases/latest/download/Tokyonight-Dark-B-LB.tar.xz" -o "$TMP_THEME"; then
-        tar -xf "$TMP_THEME" -C "$THEME_DIR" && ok "GTK theme installed" || { err "Failed to extract GTK theme"; ERRORS+=("GTK theme extraction failed"); }
-        rm -f "$TMP_THEME"
+if pacman -Qi tokyonight-gtk-theme-git &>/dev/null; then
+    ok "GTK theme already installed (AUR)"
+elif command -v paru &>/dev/null; then
+    if paru -S --needed --noconfirm tokyonight-gtk-theme-git; then
+        ok "GTK theme installed"
     else
-        err "Failed to download GTK theme"
-        ERRORS+=("GTK theme download failed")
+        err "Failed to install GTK theme from AUR"
+        ERRORS+=("GTK theme install failed")
+    fi
+elif command -v yay &>/dev/null; then
+    if yay -S --needed --noconfirm tokyonight-gtk-theme-git; then
+        ok "GTK theme installed"
+    else
+        err "Failed to install GTK theme from AUR"
+        ERRORS+=("GTK theme install failed")
     fi
 else
-    ok "GTK theme already installed"
+    err "No AUR helper available — cannot install GTK theme"
+    ERRORS+=("GTK theme: no AUR helper")
 fi
 
-# Icon theme
+# Icon theme (clone from repo — not included in AUR package)
 info "Installing Tokyonight icon theme..."
 if [ ! -d "$ICON_DIR/Tokyonight-Light" ]; then
-    TMP_ICONS="$(mktemp)"
-    if curl -fSL "https://github.com/Fausto-Korpsvart/Tokyo-Night-GTK-Theme/releases/latest/download/Tokyonight-Light-Icons.tar.xz" -o "$TMP_ICONS"; then
-        tar -xf "$TMP_ICONS" -C "$ICON_DIR" && ok "Icon theme installed" || { err "Failed to extract icon theme"; ERRORS+=("Icon theme extraction failed"); }
-        rm -f "$TMP_ICONS"
+    ICON_BUILD="$(mktemp -d /tmp/tokyonight_icons.XXXXXX)"
+    if git clone --depth=1 --filter=blob:none --sparse \
+        https://github.com/Fausto-Korpsvart/Tokyonight-GTK-Theme.git "$ICON_BUILD" 2>/dev/null; then
+        (cd "$ICON_BUILD" && git sparse-checkout set icons/Tokyonight-Light) 2>/dev/null
+        if [ -d "$ICON_BUILD/icons/Tokyonight-Light" ]; then
+            cp -r "$ICON_BUILD/icons/Tokyonight-Light" "$ICON_DIR/Tokyonight-Light"
+            ok "Icon theme installed"
+        else
+            err "Icon theme directory not found in repo"
+            ERRORS+=("Icon theme: directory not found")
+        fi
     else
-        err "Failed to download icon theme"
-        ERRORS+=("Icon theme download failed")
+        err "Failed to clone icon theme repo"
+        ERRORS+=("Icon theme: git clone failed")
     fi
+    rm -rf "$ICON_BUILD"
 else
     ok "Icon theme already installed"
 fi
@@ -343,7 +359,7 @@ done
 # Check themes
 echo ""
 info "Checking themes..."
-if [ -d "$HOME/.local/share/themes/Tokyonight-Dark-B-LB" ]; then
+if pacman -Qi tokyonight-gtk-theme-git &>/dev/null; then
     ok "Tokyonight GTK theme"
 else
     err "Tokyonight GTK theme not found"
