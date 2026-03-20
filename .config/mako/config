@@ -20,6 +20,7 @@ default-timeout=5000
 max-visible=3
 max-history=50
 outer-margin=6
+history=1
 
 # ─── Colors (Catppuccin Mocha) ───────────
 background-color=#1e1e2eee
